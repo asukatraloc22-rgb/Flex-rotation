@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>FLEX-ROTATION iScale</title>
+<h2 class="sr-only">Système FLEX-ROTATION iScale Solutions — outil de pilotage planning avec mode sombre, navigation semaine, saisie des shifts par agent et couverture horaire.</h2>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+
+.app[data-theme="light"]{
+  --bg0:#F5F6FA;--bg1:#FFFFFF;--bg2:#F0F2F7;--bg3:#E4E7EF;
+  --txt1:#0F1B2D;--txt2:#3D4F66;--txt3:#5A6E85;
+  --brd:#D1D9E6;--brd2:#B8C4D8;
+  --navy:#0F3460;--navy2:#1A4A80;--teal:#00B5A3;--teal2:#00D4BF;
+  --teal-bg:#E1F5F3;--teal-txt:#085041;
+  --danger-bg:#FCEBEB;--danger-txt:#791F1F;
+  --warn-bg:#FAEEDA;--warn-txt:#633806;
+  --info-bg:#E6F1FB;--info-txt:#0C447C;
+  --success-bg:#EAF3DE;--success-txt:#27500A;
+  --tag-font:14px;--body-font:14px;--label-font:12px;--title-font:17px;
+}
+.app[data-theme="dark"]{
+  --bg0:#0D1117;--bg1:#161B22;--bg2:#21283B;--bg3:#2D3A54;
+  --txt1:#F0F6FC;--txt2:#A3B3C4;--txt3:#7A8CA0;
+  --brd:#30363D;--brd2:#444C56;
+  --navy:#1F6FEB;--navy2:#388BFD;--teal:#00D4BF;--teal2:#00F0D8;
+  --teal-bg:#0D2620;--teal-txt:#00D4BF;
+  --danger-bg:#3A141A;--danger-txt:#FF8A8A;
+  --warn-bg:#3A2700;--warn-txt:#F2C955;
+  --info-bg:#0D2644;--info-txt:#8ABFF4;
+  --success-bg:#0D2A14;--success-txt:#65E073;
+  --tag-font:14px;--body-font:14px;--label-font:12px;--title-font:17px;
+}
+.app[data-size="lg"]{
+  --tag-font:15px;--body-font:15px;--label-font:13px;--title-font:19px;
+}
+.app[data-size="xl"]{
+  --tag-font:16px;--body-font:16px;--label-font:14px;--title-font:21px;
+}
+
+.app{font-family:system-ui, -apple-system, sans-serif;color:var(--txt1);background:transparent;width:100%}
+
+.topnav{background:var(--navy);border-radius:12px 12px 0 0;padding:0 16px;display:flex;align-items:stretch;justify-content:space-between;box-shadow:0 4px 12px rgba(0,0,0,0.15)}
+.tab-row{display:flex;align-items:stretch;gap:4px}
+.tab{font-size:var(--label-font);font-weight:600;padding:14px 18px;border:none;cursor:pointer;color:rgba(255,255,255,0.65);background:transparent;transition:all .2s ease;display:flex;align-items:center;gap:8px;border-bottom:3px solid transparent;white-space:nowrap}
+.tab i{font-size:16px}
+.tab.on{color:#fff;border-bottom-color:var(--teal)}
+.tab:hover:not(.on){color:#fff;background:rgba(255,255,255,0.1)}
+
+.nav-tools{display:flex;align-items:center;gap:10px;padding:10px 0}
+.theme-btn{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:500;padding:6px 12px;border-radius:6px;border:1px solid rgba(255,255,255,0.25);background:rgba(255,255,255,0.1);color:#fff;cursor:pointer;transition:all .2s;white-space:nowrap}
+.theme-btn:hover{background:rgba(255,255,255,0.2)}
+.size-btn{font-size:12px;font-weight:600;padding:6px 10px;border-radius:6px;border:1px solid rgba(255,255,255,0.25);background:rgba(255,255,255,0.1);color:#fff;cursor:pointer;transition:all .2s}
+.size-btn.on{background:var(--teal);color:#042C53;border-color:var(--teal)}
+.size-btn:hover:not(.on){background:rgba(255,255,255,0.2)}
+
+.body{border:1px solid var(--brd);border-top:none;border-radius:0 0 12px 12px;background:var(--bg0);box-shadow:0 8px 24px rgba(0,0,0,0.05)}
+.pane{display:none;padding:24px}.pane.on{display:block}
+
+.toolbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;gap:12px;flex-wrap:wrap}
+.week-nav{display:flex;align-items:center;gap:10px}
+.nav-btn{width:38px;height:38px;border-radius:8px;border:1px solid var(--brd2);background:var(--bg1);cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--txt1);transition:all .2s;flex-shrink:0;box-shadow:0 2px 4px rgba(0,0,0,0.05)}
+.nav-btn i{font-size:20px;color:var(--txt1)}
+.nav-btn:hover{background:var(--bg2);border-color:var(--teal);color:var(--teal)}
+.nav-btn:hover i{color:var(--teal)}
+.week-lbl{font-size:var(--body-font);font-weight:600;color:var(--txt1);min-width:240px;text-align:center;padding:9px 16px;background:var(--bg1);border:1px solid var(--brd);border-radius:8px;box-shadow:0 2px 4px rgba(0,0,0,0.02)}
+.badge-pill{font-size:var(--label-font);font-weight:600;padding:6px 12px;border-radius:20px;background:var(--teal-bg);color:var(--teal-txt);border:1px solid var(--teal);white-space:nowrap}
+
+.btn-row{display:flex;gap:8px;flex-wrap:wrap}
+.btn{font-size:var(--body-font);font-weight:500;padding:8px 16px;border-radius:8px;cursor:pointer;display:flex;align-items:center;gap:6px;border:1px solid;transition:all .2s;white-space:nowrap;box-shadow:0 2px 4px rgba(0,0,0,0.05)}
+.btn i{font-size:16px}
+.btn:hover{transform:translateY(-1px);box-shadow:0 4px 8px rgba(0,0,0,0.1)}
+.btn-navy{background:var(--navy);color:#fff;border-color:var(--navy)}
+.btn-teal{background:var(--teal);color:#042C53;border-color:var(--teal)}
+.btn-ghost{background:var(--bg1);color:var(--txt1);border-color:var(--brd2)}
+.btn-ghost:hover{background:var(--bg2)}
+.btn-red{background:var(--danger-bg);color:var(--danger-txt);border-color:var(--danger-txt)}
+
+.day-tabs{display:flex;gap:6px;margin-bottom:20px;overflow-x:auto;padding-bottom:6px}
+.day-tab{flex-shrink:0;min-width:85px;padding:10px 14px;border-radius:10px;border:1px solid var(--brd);cursor:pointer;font-size:var(--label-font);color:var(--txt2);background:var(--bg1);transition:all .2s;text-align:center;box-shadow:0 2px 4px rgba(0,0,0,0.02)}
+.day-tab .dn{font-size:var(--body-font);font-weight:600;display:block}
+.day-tab .dd{font-size:12px;color:var(--txt3);display:block;margin-top:2px}
+.day-tab .dc{font-size:11px;font-weight:500;display:block;margin-top:6px;padding:3px 6px;border-radius:12px;background:var(--bg2);color:var(--txt3)}
+.day-tab.on{background:var(--navy);color:#fff;border-color:var(--navy);transform:translateY(-2px);box-shadow:0 4px 10px rgba(15,52,96,0.3)}
+.day-tab.on .dd{color:rgba(255,255,255,0.7)}
+.day-tab.on .dc{background:rgba(255,255,255,0.2);color:#fff}
+.day-tab:hover:not(.on){border-color:var(--teal);color:var(--txt1)}
+
+.kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+.kpi{background:var(--bg1);border:1px solid var(--brd);border-radius:12px;padding:16px;border-top:4px solid var(--brd);box-shadow:0 4px 12px rgba(0,0,0,0.04)}
+.kpi.kpi-ok{border-top-color:var(--teal)}
+.kpi.kpi-warn{border-top-color:#E3B341}
+.kpi.kpi-bad{border-top-color:#FF7B7B}
+.kpi-n{font-size:26px;font-weight:600;color:var(--txt1);line-height:1.2;margin-bottom:4px}
+.kpi-l{font-size:var(--label-font);font-weight:500;color:var(--txt3)}
+
+.alert{border-radius:10px;padding:12px 16px;font-size:var(--body-font);line-height:1.6;border-left:4px solid;margin-bottom:14px;display:flex;align-items:flex-start;gap:10px;font-weight:500;box-shadow:0 2px 6px rgba(0,0,0,0.03)}
+.alert i{font-size:20px;flex-shrink:0;margin-top:2px}
+.alert-warn{background:var(--warn-bg);border-color:#BA7517;color:var(--warn-txt)}
+.alert-info{background:var(--teal-bg);border-color:var(--teal);color:var(--teal-txt)}
+.alert-bad{background:var(--danger-bg);border-color:#E24B4A;color:var(--danger-txt)}
+
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.card{background:var(--bg1);border:1px solid var(--brd);border-radius:12px;overflow:hidden;box-shadow:0 4px 16px rgba(0,0,0,0.04)}
+.card-head{padding:16px 20px;border-bottom:1px solid var(--brd);display:flex;align-items:center;justify-content:space-between;background:var(--bg2)}
+.card-head-left{display:flex;align-items:center;gap:10px}
+.card-head-left i{font-size:20px;color:var(--teal)}
+.card-title{font-size:var(--title-font);font-weight:600;color:var(--txt1)}
+.card-sub{font-size:var(--label-font);font-weight:500;color:var(--txt3)}
+.card-body{padding:20px}
+
+.ag-rows{display:flex;flex-direction:column;gap:12px}
+.ag-row{display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:10px;background:var(--bg2);border:1px solid var(--brd);transition:all .2s}
+.ag-row.ag-active{border-color:var(--brd2);background:var(--bg1);box-shadow:0 2px 8px rgba(0,0,0,0.03)}
+.av{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;flex-shrink:0}
+.ag-label{font-size:var(--body-font);font-weight:600;min-width:90px;color:var(--txt1)}
+.toggle-wrap{display:flex;align-items:center;gap:8px;cursor:pointer}
+.toggle-wrap input[type=checkbox]{width:18px;height:18px;accent-color:var(--teal);cursor:pointer}
+.toggle-wrap span{font-size:var(--body-font);font-weight:500;color:var(--txt2)}
+.time-row{display:flex;align-items:center;gap:8px;flex:1}
+.time-row input[type=time]{font-size:var(--body-font);padding:6px 10px;border-radius:8px;border:1px solid var(--brd2);background:var(--bg0);color:var(--txt1);width:100px;font-weight:500}
+.time-sep{font-size:var(--body-font);color:var(--txt3);font-weight:600}
+
+.note-area{width:100%;border-radius:10px;border:1px solid var(--brd2);background:var(--bg0);color:var(--txt1);font-size:var(--body-font);padding:12px 14px;resize:vertical;min-height:80px;font-family:inherit;line-height:1.6;box-shadow:inset 0 2px 4px rgba(0,0,0,0.02)}
+
+.tl-wrap{overflow-x:auto;padding-bottom:10px}
+.tl-grid{display:grid;gap:3px;min-width:400px}
+.tl-hdr{font-size:11px;font-weight:600;color:var(--txt3);text-align:center;padding:4px 1px}
+.ag-lbl-tl{font-size:12px;font-weight:600;display:flex;align-items:center;padding:4px 8px 4px 0;color:var(--txt1);white-space:nowrap}
+.tl-cell{height:28px;border-radius:4px;background:var(--bg3)}
+.tl-cell.on{display:flex;align-items:center;justify-content:center;box-shadow:inset 0 0 0 1px rgba(0,0,0,0.05)}
+.s-cr{background:#1D5C52;color:#9FE1CB}
+.s-ga{background:#1A3F6F;color:#79B8FF}
+.s-jo{background:#3A2B6E;color:#C8BFF8}
+.s-pa{background:#5C3A10;color:#FAC775}
+.app[data-theme="light"] .s-cr{background:#E1F5F3;color:#085041}
+.app[data-theme="light"] .s-ga{background:#B5D4F4;color:#0C447C}
+.app[data-theme="light"] .s-jo{background:#EEEDFE;color:#3C3489}
+.app[data-theme="light"] .s-pa{background:#FAEEDA;color:#633806}
+.cov-s{background:#4A1515;color:#FF9898}
+.cov-2{background:#3D2E00;color:#E3B341}
+.cov-3{background:#0D2A10;color:#56D364}
+.cov-4{background:#0D2620;color:#00D4BF}
+.app[data-theme="light"] .cov-s{background:#FCEBEB;color:#791F1F}
+.app[data-theme="light"] .cov-2{background:#FFF3CD;color:#633806}
+.app[data-theme="light"] .cov-3{background:#D4EDDA;color:#27500A}
+.app[data-theme="light"] .cov-4{background:#C8F0E8;color:#085041}
+
+.cov-seg-row{display:flex;align-items:center;gap:10px;font-size:var(--body-font);margin-top:6px}
+.cov-time-lbl{min-width:78px;text-align:right;color:var(--txt3);font-weight:500}
+.cov-bar{height:22px;border-radius:6px;display:flex;align-items:center;padding:0 10px;font-size:11px;font-weight:600;min-width:8px}
+.cov-ag-lbl{font-size:12px;color:var(--txt3);font-weight:500}
+
+.week-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:10px}
+.wk-card{border:1px solid var(--brd);border-radius:12px;overflow:hidden;cursor:pointer;transition:all .2s;box-shadow:0 2px 8px rgba(0,0,0,0.02)}
+.wk-card:hover{border-color:var(--teal);transform:translateY(-2px);box-shadow:0 6px 12px rgba(0,0,0,0.06)}
+.wk-card.on{border-color:var(--teal);border-width:2px}
+.wk-head{background:var(--navy);padding:10px 6px;text-align:center}
+.wk-dn{font-size:var(--body-font);font-weight:600;color:#fff;display:block}
+.wk-dd{font-size:11px;color:rgba(255,255,255,0.7);display:block;margin-top:2px}
+.wk-body{padding:10px 8px;min-height:80px;background:var(--bg1)}
+.wk-ag{font-size:11px;padding:4px 6px;border-radius:4px;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:600}
+.wk-empty{font-size:12px;color:var(--txt3);text-align:center;padding:12px 0;font-style:italic}
+.wk-note{font-size:11px;color:var(--txt3);margin-top:6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-style:italic}
+
+.legend-row{display:flex;gap:12px;flex-wrap:wrap;margin-top:12px}
+.leg{display:flex;align-items:center;gap:6px;font-size:var(--body-font);color:var(--txt2);font-weight:500}
+.leg-dot{width:12px;height:12px;border-radius:3px;flex-shrink:0}
+</style>
+</head>
+<body>
+<div class="app" id="app" data-theme="light" data-size="md">
+
+<div class="topnav">
+  <div class="tab-row">
+    <button class="tab on" onclick="ST('plan')"><i class="ti ti-calendar-week" aria-hidden="true"></i> Planning</button>
+    <button class="tab" onclick="ST('rot')"><i class="ti ti-refresh" aria-hidden="true"></i> Rotation FLEX</button>
+    <button class="tab" onclick="ST('mat')"><i class="ti ti-sun" aria-hidden="true"></i> Matin autonome</button>
+    <button class="tab" onclick="ST('pro')"><i class="ti ti-shield-check" aria-hidden="true"></i> Protocoles</button>
+  </div>
+  <div class="nav-tools">
+    <button class="theme-btn" onclick="toggleTheme()" id="theme-btn"><i class="ti ti-moon" id="theme-icon"></i> <span id="theme-lbl">Mode sombre</span></button>
+    <button class="size-btn on" onclick="setSize('md')" id="sz-md">M</button>
+    <button class="size-btn" onclick="setSize('lg')" id="sz-lg">L</button>
+    <button class="size-btn" onclick="setSize('xl')" id="sz-xl">XL</button>
+  </div>
+</div>
+
+<div class="body">
+
+<div class="pane on" id="tp-plan">
+  <div class="toolbar">
+    <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+      <div class="week-nav">
+        <button class="nav-btn" onclick="chgWeek(-1)" aria-label="Semaine précédente"><i class="ti ti-chevron-left"></i></button>
+        <span class="week-lbl" id="wk-lbl"></span>
+        <button class="nav-btn" onclick="chgWeek(1)" aria-label="Semaine suivante"><i class="ti ti-chevron-right"></i></button>
+      </div>
+      <span class="badge-pill" id="wk-badge"></span>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-teal" onclick="copyWeek()"><i class="ti ti-copy"></i> Dupliquer</button>
+      <button class="btn btn-ghost" onclick="exportWeek()"><i class="ti ti-download"></i> Exporter</button>
+      <button class="btn btn-red" onclick="clearWeek()"><i class="ti ti-trash"></i> Effacer</button>
+    </div>
+  </div>
+
+  <div class="day-tabs" id="day-tabs"></div>
+  <div class="kpi-row" id="kpi-row"></div>
+  <div id="day-alerts"></div>
+
+  <div class="grid2">
+    <div class="card">
+      <div class="card-head">
+        <div class="card-head-left"><i class="ti ti-users" aria-hidden="true"></i><span class="card-title">Shifts du jour</span></div>
+        <span class="card-sub" id="day-lbl-h"></span>
+      </div>
+      <div class="card-body">
+        <div class="ag-rows" id="agent-rows"></div>
+        <div class="btn-row" style="margin-top:20px">
+          <button class="btn btn-navy" onclick="saveDay()"><i class="ti ti-check"></i> Sauvegarder</button>
+          <button class="btn btn-ghost" onclick="resetDay()"><i class="ti ti-refresh"></i> Réinitialiser</button>
+        </div>
+        <div style="margin-top:20px">
+          <div style="font-size:var(--body-font);font-weight:600;color:var(--txt2);margin-bottom:8px">Note du jour</div>
+          <textarea class="note-area" id="day-note" placeholder="Ex: réunion 15h, Gaëlle en congé, pic e-commerce attendu..."></textarea>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <div class="card-head-left"><i class="ti ti-chart-gantt" aria-hidden="true"></i><span class="card-title">Couverture horaire</span></div>
+        <span class="card-sub" id="cov-lbl-h"></span>
+      </div>
+      <div class="card-body">
+        <div class="tl-wrap"><div class="tl-grid" id="tl-day"></div></div>
+        <div class="legend-row" id="tl-legend"></div>
+        <div id="cov-bars" style="margin-top:16px"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:20px">
+    <div class="card-head">
+      <div class="card-head-left"><i class="ti ti-layout-grid" aria-hidden="true"></i><span class="card-title">Vue semaine complète</span></div>
+    </div>
+    <div class="card-body">
+      <div class="week-grid" id="week-ov"></div>
+    </div>
+  </div>
+</div>
+
+<div class="pane" id="tp-rot">
+  <div style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--teal);margin-bottom:12px">Système FLEX-ROTATION</div>
+  <div style="font-size:var(--title-font);font-weight:600;margin-bottom:6px;color:var(--txt1)">Les 3 rôles & tableau de rotation</div>
+  <div style="font-size:var(--body-font);color:var(--txt2);margin-bottom:20px;line-height:1.6">Un rôle défini par agent à chaque instant — rotation selon l'effectif présent</div>
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:24px" id="role-cards"></div>
+  <table style="width:100%;border-collapse:collapse;font-size:var(--body-font)">
+    <thead id="rot-head"></thead>
+    <tbody id="rot-tbody"></tbody>
+  </table>
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:24px" id="surge-cards"></div>
+</div>
+
+<div class="pane" id="tp-mat">
+  <div style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--teal);margin-bottom:12px">Crystella & Gaëlle · 07h–14h</div>
+  <div style="font-size:var(--title-font);font-weight:600;margin-bottom:6px;color:var(--txt1)">Organisation matin autonome</div>
+  <div style="font-size:var(--body-font);color:var(--txt2);margin-bottom:16px">Système coexistence — planning fixe comme socle, règles d'affluence comme override automatique</div>
+  <div style="background:var(--teal-bg);border-left:4px solid var(--teal);border-radius:0 10px 10px 0;padding:14px 18px;font-size:var(--body-font);color:var(--teal-txt);line-height:1.6;margin-bottom:24px;font-weight:500">
+    <strong>Principe :</strong> chaque agent connaît son rôle avant de se connecter. Si un seuil d'affluence est atteint, le rôle bascule automatiquement. Quand le pic retombe, le planning fixe reprend — pas l'ancien rôle, le rôle prévu à cet horaire.
+  </div>
+  <div style="font-size:var(--title-font);font-weight:600;color:var(--txt1);margin-bottom:12px">Planning fixe — socle de départ</div>
+  <div id="mat-table-wrap" style="margin-bottom:24px"></div>
+  <div style="font-size:var(--title-font);font-weight:600;color:var(--txt1);margin-bottom:12px">Règles d'affluence — override automatique</div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px" id="mat-cards"></div>
+</div>
+
+<div class="pane" id="tp-pro">
+  <div style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--teal);margin-bottom:12px">Règles opérationnelles</div>
+  <div style="font-size:var(--title-font);font-weight:600;margin-bottom:6px;color:var(--txt1)">Protocoles — 4 règles non négociables</div>
+  <div style="font-size:var(--body-font);color:var(--txt2);margin-bottom:20px">Chaque agent les connaît et les applique sans attendre d'instruction</div>
+  <div style="display:flex;flex-direction:column;gap:16px" id="proto-list"></div>
+</div>
+
+</div>
+</div>
+
+<script>
+const AGENTS=[
+  {id:'cr',name:'Crystella',init:'CR',light:{bg:'#E1F5F3',fg:'#085041'},dark:{bg:'#1D5C52',fg:'#9FE1CB'},cls:'s-cr'},
+  {id:'ga',name:'Gaëlle',init:'GA',light:{bg:'#B5D4F4',fg:'#0C447C'},dark:{bg:'#1A3F6F',fg:'#79B8FF'},cls:'s-ga'},
+  {id:'jo',name:'John',init:'JO',light:{bg:'#EEEDFE',fg:'#3C3489'},dark:{bg:'#3A2B6E',fg:'#C8BFF8'},cls:'s-jo'},
+  {id:'pa',name:'Patrick',init:'PT',light:{bg:'#FAEEDA',fg:'#633806'},dark:{bg:'#5C3A10',fg:'#FAC775'},cls:'s-pa'},
+];
+const DAYS_FR=['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'];
+const DAYS_FULL=['Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi','Dimanche'];
+const HOURS=Array.from({length:17},(_,i)=>i+7);
+let currentWeek=getMonday(new Date()),schedule={},currentDay=0,theme='light',size='md';
+
+function getMonday(d){const dd=new Date(d);const dy=dd.getDay();dd.setDate(dd.getDate()-dy+(dy===0?-6:1));dd.setHours(0,0,0,0);return dd;}
+function addDays(d,n){const r=new Date(d);r.setDate(r.getDate()+n);return r;}
+function fmtDate(d){return d.toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit'});}
+function fmtKey(d){return d.toISOString().slice(0,10);}
+function getWK(){return fmtKey(currentWeek);}
+function getDK(i){return fmtKey(addDays(currentWeek,i));}
+
+function agColors(ag){return theme==='dark'?ag.dark:ag.light;}
+
+function initSched(){
+  const wk=getWK();
+  if(!schedule[wk]){
+    schedule[wk]={days:Array.from({length:7},()=>({
+      agents:{cr:{on:false,s:'07:00',e:'16:00'},ga:{on:false,s:'10:00',e:'19:00'},jo:{on:false,s:'14:00',e:'23:00'},pa:{on:false,s:'14:00',e:'23:00'}},
+      note:''
+    }))};
+    const tues=schedule[wk].days[1];
+    tues.agents.cr.on=true;tues.agents.ga.on=true;tues.agents.jo.on=true;tues.agents.pa.on=true;
+  }
+}
+
+function toggleTheme(){
+  theme=theme==='light'?'dark':'light';
+  document.getElementById('app').dataset.theme=theme;
+  document.getElementById('theme-icon').className=theme==='dark'?'ti ti-sun':'ti ti-moon';
+  document.getElementById('theme-lbl').textContent=theme==='dark'?'Mode clair':'Mode sombre';
+  renderAll();
+}
+function setSize(s){
+  size=s;
+  document.getElementById('app').dataset.size=s;
+  ['md','lg','xl'].forEach(sz=>document.getElementById('sz-'+sz).classList.toggle('on',sz===s));
+}
+
+function ST(id){
+  document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('on',['plan','rot','mat','pro'][i]===id));
+  document.querySelectorAll('.pane').forEach(p=>p.classList.remove('on'));
+  document.getElementById('tp-'+id).classList.add('on');
+  if(id==='rot')renderRot();
+  if(id==='mat')renderMat();
+  if(id==='pro')renderProto();
+}
+
+function chgWeek(d){currentWeek=addDays(currentWeek,d*7);initSched();renderAll();}
+function renderAll(){renderHeader();renderDayTabs();renderDayEditor();renderWeekOv();}
+
+function renderHeader(){
+  const end=addDays(currentWeek,6);
+  document.getElementById('wk-lbl').textContent=`Semaine du ${fmtDate(currentWeek)} au ${fmtDate(end)}`;
+  let total=0;const wk=getWK();
+  if(schedule[wk])schedule[wk].days.forEach(d=>Object.values(d.agents).forEach(a=>{if(a.on)total++;}));
+  document.getElementById('wk-badge').textContent=`${total} shift${total!==1?'s':''} planifié${total!==1?'s':''}`;
+}
+
+function renderDayTabs(){
+  const wk=getWK();const cont=document.getElementById('day-tabs');cont.innerHTML='';
+  for(let i=0;i<7;i++){
+    const d=addDays(currentWeek,i);
+    const day=schedule[wk]?schedule[wk].days[i]:null;
+    const n=day?Object.values(day.agents).filter(a=>a.on).length:0;
+    const btn=document.createElement('button');
+    btn.className='day-tab'+(i===currentDay?' on':'');
+    btn.innerHTML=`<span class="dn">${DAYS_FR[i]}</span><span class="dd">${fmtDate(d)}</span><span class="dc">${n>0?n+' agent'+(n>1?'s':''):'Repos'}</span>`;
+    btn.onclick=()=>{currentDay=i;renderAll();};
+    cont.appendChild(btn);
+  }
+}
+
+function renderDayEditor(){
+  const wk=getWK();const day=schedule[wk]?schedule[wk].days[currentDay]:null;
+  const dname=DAYS_FULL[currentDay]+' '+fmtDate(addDays(currentWeek,currentDay));
+  document.getElementById('day-lbl-h').textContent=dname;
+  document.getElementById('cov-lbl-h').textContent=dname;
+  document.getElementById('day-note').value=day?day.note:'';
+  const rows=document.getElementById('agent-rows');rows.innerHTML='';
+  AGENTS.forEach(ag=>{
+    const ad=day?day.agents[ag.id]:{on:false,s:'09:00',e:'18:00'};
+    const c=agColors(ag);
+    const row=document.createElement('div');
+    row.className='ag-row'+(ad.on?' ag-active':'');
+    row.innerHTML=`
+      <div class="av" style="background:${c.bg};color:${c.fg}">${ag.init}</div>
+      <span class="ag-label">${ag.name}</span>
+      <label class="toggle-wrap">
+        <input type="checkbox" id="chk-${ag.id}" ${ad.on?'checked':''} onchange="togAg('${ag.id}',this)">
+        <span>${ad.on?'Actif':'Repos'}</span>
+      </label>
+      <div class="time-row" id="ti-${ag.id}" style="${ad.on?'':'opacity:.3;pointer-events:none'}">
+        <input type="time" id="ts-${ag.id}" value="${ad.s}" onchange="updTime()">
+        <span class="time-sep">–</span>
+        <input type="time" id="te-${ag.id}" value="${ad.e}" onchange="updTime()">
+      </div>`;
+    rows.appendChild(row);
+  });
+  renderTL();renderKPI();renderAlerts();
+}
+
+function togAg(id,chk){
+  const ti=document.getElementById('ti-'+id);
+  ti.style.opacity=chk.checked?'1':'0.3';
+  ti.style.pointerEvents=chk.checked?'auto':'none';
+  const lbl=chk.parentElement.querySelector('span');
+  if(lbl)lbl.textContent=chk.checked?'Actif':'Repos';
+  chk.closest('.ag-row').classList.toggle('ag-active',chk.checked);
+  renderTL();renderKPI();renderAlerts();
+}
+function updTime(){renderTL();renderKPI();renderAlerts();}
+
+function getCurrAg(){
+  return AGENTS.map(ag=>{
+    const chk=document.getElementById('chk-'+ag.id);
+    if(!chk||!chk.checked)return null;
+    const ts=document.getElementById('ts-'+ag.id);
+    const te=document.getElementById('te-'+ag.id);
+    return{...ag,sh:parseInt(ts.value),eh:parseInt(te.value),sv:ts.value,ev:te.value};
+  }).filter(Boolean);
+}
+
+function renderTL(){
+  const ags=getCurrAg();
+  const grid=document.getElementById('tl-day');
+  grid.style.gridTemplateColumns=`85px repeat(${HOURS.length},1fr)`;
+  grid.innerHTML='';
+  const mk=(t,c,s)=>{const d=document.createElement('div');d.className=c||'';if(s)d.style.cssText=s;if(t)d.textContent=t;return d;};
+  grid.appendChild(mk('',''));
+  HOURS.forEach(h=>grid.appendChild(mk(h+'h','tl-hdr')));
+  if(!ags.length){
+    const e=document.createElement('div');e.style.cssText='grid-column:1/-1;padding:24px;text-align:center;font-size:14px;color:var(--txt3);font-style:italic';e.textContent='Aucun agent planifié ce jour';
+    grid.appendChild(e);
+    document.getElementById('cov-bars').innerHTML='';
+    document.getElementById('tl-legend').innerHTML='';
+    return;
+  }
+  ags.forEach(ag=>{
+    grid.appendChild(mk(ag.name,'ag-lbl-tl'));
+    HOURS.forEach(h=>{
+      const on=h>=ag.sh&&h<ag.eh;
+      if(!on){grid.appendChild(mk('','tl-cell'));return;}
+      const n=ags.filter(a=>h>=a.sh&&h<a.eh).length;
+      const ov=n===1?'cov-s':n===2?'cov-2':n===3?'cov-3':'cov-4';
+      grid.appendChild(mk('','tl-cell on '+ag.cls+' '+ov));
+    });
+  });
+  const leg=document.getElementById('tl-legend');
+  const active=ags.map(ag=>`<div class="leg"><div class="leg-dot" style="background:${agColors(ag).bg}"></div>${ag.name}</div>`).join('');
+  leg.innerHTML=active;
+  renderCovBars(ags);
+}
+
+function renderCovBars(ags){
+  const cont=document.getElementById('cov-bars');cont.innerHTML='';
+  const slots=HOURS.map(h=>({h,n:ags.filter(a=>h>=a.sh&&h<a.eh).length,names:ags.filter(a=>h>=a.sh&&h<a.eh).map(a=>a.name)})).filter(s=>s.n>0);
+  if(!slots.length)return;
+  const merged=[];let cur=null;
+  slots.forEach(s=>{
+    if(cur&&cur.n===s.n&&s.h===cur.eh){cur.eh=s.h+1;}
+    else{if(cur)merged.push(cur);cur={n:s.n,sh:s.h,eh:s.h+1,names:s.names};}
+  });if(cur)merged.push(cur);
+  const bgs={1:theme==='dark'?'#4A1515':'#FCEBEB',2:theme==='dark'?'#3D2E00':'#FFF3CD',3:theme==='dark'?'#0D2A10':'#D4EDDA',4:theme==='dark'?'#0D2620':'#C8F0E8'};
+  const fgs={1:theme==='dark'?'#FF9898':'#791F1F',2:theme==='dark'?'#E3B341':'#633806',3:theme==='dark'?'#56D364':'#27500A',4:theme==='dark'?'#00D4BF':'#085041'};
+  merged.forEach(seg=>{
+    const pct=Math.round(Math.max(((seg.eh-seg.sh)/16)*100,6));
+    const lbl={1:'Solo',2:'×2',3:'×3',4:'×4'}[seg.n]||'×'+seg.n;
+    const row=document.createElement('div');row.className='cov-seg-row';
+    row.innerHTML=`<span class="cov-time-lbl">${seg.sh}h–${seg.eh}h</span><div class="cov-bar" style="background:${bgs[seg.n]||bgs[4]};color:${fgs[seg.n]||fgs[4]};width:${pct}%">${lbl}</div><span class="cov-ag-lbl">${seg.names.join(', ')}</span>`;
+    cont.appendChild(row);
+  });
+}
+
+function renderKPI(){
+  const ags=getCurrAg();
+  const n=ags.length;
+  const soloH=HOURS.filter(h=>ags.filter(a=>h>=a.sh&&h<a.eh).length===1).length;
+  const covH=HOURS.filter(h=>ags.some(a=>h>=a.sh&&h<a.eh)).length;
+  const peak=HOURS.reduce((m,h)=>Math.max(m,ags.filter(a=>h>=a.sh&&h<a.eh).length),0);
+  const kpis=[
+    {v:n,l:'Agents planifiés',cls:n===0?'kpi-bad':n>=3?'kpi-ok':'kpi-warn'},
+    {v:covH+'h',l:'Couverture totale',cls:''},
+    {v:soloH+'h',l:'Heures solo',cls:soloH===0?'kpi-ok':soloH>3?'kpi-bad':'kpi-warn'},
+    {v:peak,l:'Pic simultané',cls:peak>=3?'kpi-ok':peak===0?'kpi-bad':'kpi-warn'},
+  ];
+  document.getElementById('kpi-row').innerHTML=kpis.map(k=>`<div class="kpi ${k.cls}"><div class="kpi-n">${k.v}</div><div class="kpi-l">${k.l}</div></div>`).join('');
+}
+
+function renderAlerts(){
+  const ags=getCurrAg();const box=document.getElementById('day-alerts');const alerts=[];
+  if(!ags.length){alerts.push({t:'bad',i:'ti-alert-circle',m:'Aucun agent planifié — journée non couverte.'});}
+  else if(ags.length===1){alerts.push({t:'bad',i:'ti-user',m:`<strong>${ags[0].name}</strong> est seul(e) — protocole SOLO obligatoire sur toute la plage.`});}
+  const soloH=HOURS.filter(h=>ags.filter(a=>h>=a.sh&&h<a.eh).length===1).length;
+  if(ags.length>1&&soloH>2)alerts.push({t:'warn',i:'ti-clock',m:`${soloH}h de couverture solo détectées. Vérifier les plages concernées.`});
+  if(ags.length>0&&!ags.some(a=>a.sh<=14&&a.eh>14))alerts.push({t:'warn',i:'ti-calendar-off',m:'Aucun agent présent à 14h — créneau de briefing TL non couvert.'});
+  if(ags.length>0&&ags.some(a=>a.sh<=10&&a.eh>10)&&ags.filter(a=>a.sh<=10&&a.eh>10).length===1)alerts.push({t:'info',i:'ti-sun',m:'Matin autonome actif — protocole SOLO ou Matin Autonome applicable.'});
+  box.innerHTML=alerts.map(a=>`<div class="alert alert-${a.t}"><i class="ti ${a.i}" aria-hidden="true"></i><span>${a.m}</span></div>`).join('');
+}
+
+function saveDay(){
+  const wk=getWK();if(!schedule[wk])initSched();
+  const day=schedule[wk].days[currentDay];
+  AGENTS.forEach(ag=>{
+    const chk=document.getElementById('chk-'+ag.id);if(!chk)return;
+    const ts=document.getElementById('ts-'+ag.id);const te=document.getElementById('te-'+ag.id);
+    day.agents[ag.id]={on:chk.checked,s:ts?ts.value:'07:00',e:te?te.value:'16:00'};
+  });
+  day.note=document.getElementById('day-note').value;
+  renderDayTabs();renderWeekOv();renderHeader();
+  const btn=event.target.closest('button');const orig=btn.innerHTML;
+  btn.innerHTML='<i class="ti ti-check"></i> Sauvegardé';btn.style.background='var(--teal)';btn.style.color='#042C53';
+  setTimeout(()=>{btn.innerHTML=orig;btn.style.background='';btn.style.color='';},1600);
+}
+
+function resetDay(){
+  const wk=getWK();if(schedule[wk])schedule[wk].days[currentDay]={agents:{cr:{on:false,s:'07:00',e:'16:00'},ga:{on:false,s:'10:00',e:'19:00'},jo:{on:false,s:'14:00',e:'23:00'},pa:{on:false,s:'14:00',e:'23:00'}},note:''};
+  renderDayEditor();renderDayTabs();renderWeekOv();renderHeader();
+}
+function clearWeek(){delete schedule[getWK()];initSched();renderAll();}
+function copyWeek(){
+  const wk=getWK();const next=fmtKey(addDays(currentWeek,7));
+  if(schedule[wk])schedule[next]=JSON.parse(JSON.stringify(schedule[wk]));
+  currentWeek=addDays(currentWeek,7);renderAll();
+}
+
+function renderWeekOv(){
+  const wk=getWK();const cont=document.getElementById('week-ov');cont.innerHTML='';
+  for(let i=0;i<7;i++){
+    const d=addDays(currentWeek,i);
+    const day=schedule[wk]?schedule[wk].days[i]:null;
+    const activeAg=day?AGENTS.filter(ag=>day.agents[ag.id]&&day.agents[ag.id].on):[];
+    const div=document.createElement('div');
+    div.className='wk-card'+(i===currentDay?' on':'');
+    div.onclick=()=>{currentDay=i;renderAll();};
+    const hbg=i===currentDay?'var(--teal)':'var(--navy)';
+    const agPills=activeAg.map(ag=>{const c=agColors(ag);return`<div class="wk-ag" style="background:${c.bg};color:${c.fg}">${ag.name} ${day.agents[ag.id].s.slice(0,5)}–${day.agents[ag.id].e.slice(0,5)}</div>`;}).join('');
+    div.innerHTML=`<div class="wk-head" style="background:${hbg}"><span class="wk-dn">${DAYS_FR[i]}</span><span class="wk-dd">${fmtDate(d)}</span></div><div class="wk-body">${agPills||'<div class="wk-empty">Repos</div>'}${day&&day.note?`<div class="wk-note">${day.note}</div>`:''}</div>`;
+    cont.appendChild(div);
+  }
+}
+
+function exportWeek(){
+  const wk=getWK();const end=addDays(currentWeek,6);
+  let txt=`PLANNING iScale Solutions — Onspot Travel\nSemaine du ${fmtDate(currentWeek)} au ${fmtDate(end)}\n${'─'.repeat(48)}\n\n`;
+  for(let i=0;i<7;i++){
+    const d=addDays(currentWeek,i);const day=schedule[wk]?schedule[wk].days[i]:null;
+    txt+=`${DAYS_FULL[i]} ${fmtDate(d)}\n`;
+    const active=day?AGENTS.filter(ag=>day.agents[ag.id]&&day.agents[ag.id].on):[];
+    if(!active.length)txt+='  — Repos\n';
+    else active.forEach(ag=>txt+=`  ${ag.name} : ${day.agents[ag.id].s} – ${day.agents[ag.id].e}\n`);
+    if(day&&day.note)txt+=`  Note : ${day.note}\n`;
+    txt+='\n';
+  }
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([txt],{type:'text/plain'}));
+  a.download=`planning_iscale_${wk}.txt`;a.click();
+}
+
+function renderRot(){
+  const roles=[
+    {abbr:'CA',name:'Capitaine Appels',desc:'100% dédié Ringover. Décrochage <3s. Snooze avant toute interruption. Ne touche pas à Crisp.',hbg:'var(--danger-bg)',fg:'var(--danger-txt)'},
+    {abbr:'CC',name:'Capitaine Crisp',desc:'Email + WhatsApp prioritaires. Backup appels si CA indisponible. Met à jour les tickets issus de ses convos.',hbg:'var(--info-bg)',fg:'var(--info-txt)'},
+    {abbr:'DC',name:'Dispatch Client',desc:'Suit son dispatch client. S\'adapte à l\'affluence. Backup CA ou CC si surcharge. Effectue les rappels si CA indispo.',hbg:'var(--teal-bg)',fg:'var(--teal-txt)'},
+  ];
+  document.getElementById('role-cards').innerHTML=roles.map(r=>`
+    <div style="border-radius:12px;border:1px solid var(--brd);overflow:hidden;box-shadow:0 4px 12px rgba(0,0,0,0.04)">
+      <div style="padding:16px 20px 14px;background:${r.hbg};border-bottom:1px solid var(--brd)">
+        <div style="font-size:28px;font-weight:600;color:${r.fg};line-height:1">${r.abbr}</div>
+        <div style="font-size:var(--body-font);font-weight:600;color:var(--txt1);margin-top:6px">${r.name}</div>
+      </div>
+      <div style="padding:14px 20px;font-size:var(--body-font);color:var(--txt2);line-height:1.6;background:var(--bg1)">${r.desc}</div>
+    </div>`).join('');
+
+  const thStyle=`background:var(--navy);color:#fff;padding:12px 14px;text-align:left;font-size:var(--body-font);font-weight:600;letter-spacing:.02em`;
+  document.getElementById('rot-head').innerHTML=`<tr><th style="${thStyle}">Fenêtre</th><th style="${thStyle};text-align:center">Effectif</th><th style="${thStyle}">Agents</th><th style="${thStyle};text-align:center">CA</th><th style="${thStyle};text-align:center">CC</th><th style="${thStyle};text-align:center">DC</th><th style="${thStyle};text-align:center">Rotation</th></tr>`;
+
+  const agSt=ag=>{const c=agColors(ag);return`background:${c.bg};color:${c.fg}`;};
+  const agByName={Crystella:AGENTS[0],Gaëlle:AGENTS[1],John:AGENTS[2],Patrick:AGENTS[3]};
+  const effStyle=(e)=>{const m={1:{bg:theme==='dark'?'#4A1515':'#FCEBEB',fg:theme==='dark'?'#FF9898':'#791F1F'},2:{bg:theme==='dark'?'#3D2E00':'#FFF3CD',fg:theme==='dark'?'#E3B341':'#633806'},3:{bg:theme==='dark'?'#0D2A10':'#D4EDDA',fg:theme==='dark'?'#56D364':'#27500A'},4:{bg:theme==='dark'?'#0D2620':'#C8F0E8',fg:theme==='dark'?'#00D4BF':'#085041'}};const v=m[e]||m[2];return`background:${v.bg};color:${v.fg}`;};
+  const pill=(t,bg,fg)=>`<span style="font-size:12px;font-weight:600;padding:4px 10px;border-radius:20px;display:inline-block;margin:2px;background:${bg};color:${fg}">${t}</span>`;
+  const rpill=(t,type)=>{const m={ca:{bg:theme==='dark'?'#4A1515':'#FCEBEB',fg:theme==='dark'?'#FF9898':'#791F1F'},cc:{bg:theme==='dark'?'#0D1F3A':'#E6F1FB',fg:theme==='dark'?'#79B8FF':'#0C447C'},dc:{bg:theme==='dark'?'#0D2620':'#E1F5F3',fg:theme==='dark'?'#00D4BF':'#085041'}};const v=m[type];return v?pill(t,v.bg,v.fg):`<span style="font-size:12px;color:var(--txt3)">—</span>`;};
+  const rows=[
+    {w:'07h–10h',eff:1,ags:['Crystella'],ca:rpill('CA+CC','ca'),cc:'<span style="font-size:12px;color:var(--txt3)">—</span>',dc:'<span style="font-size:12px;color:var(--txt3)">—</span>',rot:'Protocole SOLO'},
+    {w:'10h–14h',eff:2,ags:['Crystella','Gaëlle'],ca:rpill('1 agent','ca'),cc:rpill('1 agent','cc'),dc:'<span style="font-size:12px;color:var(--txt3)">—</span>',rot:'2h — voir Matin'},
+    {w:'14h–16h',eff:4,ags:['Crystella','Gaëlle','John','Patrick'],ca:rpill('1','ca'),cc:rpill('1','cc'),dc:rpill('2','dc'),rot:'1h'},
+    {w:'16h–19h',eff:3,ags:['Gaëlle','John','Patrick'],ca:rpill('1','ca'),cc:rpill('1','cc'),dc:rpill('1','dc'),rot:'2h'},
+    {w:'19h–23h',eff:2,ags:['John','Patrick'],ca:rpill('Alt.','ca'),cc:rpill('Alt.','cc'),dc:'<span style="font-size:12px;color:var(--txt3)">—</span>',rot:'2h'},
+  ];
+  const tdStyle=`padding:12px 14px;border-bottom:1px solid var(--brd);vertical-align:middle;font-size:var(--body-font)`;
+  document.getElementById('rot-tbody').innerHTML=rows.map((r,i)=>`<tr style="${i%2?'background:var(--bg2)':'background:var(--bg1)'}">
+    <td style="${tdStyle};font-weight:600;color:var(--txt1)">${r.w}</td>
+    <td style="${tdStyle};text-align:center"><span style="font-size:12px;font-weight:600;padding:4px 10px;border-radius:20px;${effStyle(r.eff)}">×${r.eff}</span></td>
+    <td style="${tdStyle}">${r.ags.map(n=>{const a=agByName[n];return a?pill(n,...Object.values(agColors(a))):'';}).join('')}</td>
+    <td style="${tdStyle};text-align:center">${r.ca}</td>
+    <td style="${tdStyle};text-align:center">${r.cc}</td>
+    <td style="${tdStyle};text-align:center">${r.dc}</td>
+    <td style="${tdStyle};text-align:center;font-weight:${r.eff===4?'600':'500'};color:${r.eff===4?'var(--teal)':'var(--txt2)'}">${r.rot}</td>
+  </tr>`).join('');
+
+  const surges=[
+    {mode:'Mode normal',cond:'Flux standard',action:'Rotation FLEX active. CA + CC + DC selon le tableau.',top:'var(--teal)',hbg:'var(--teal-bg)',mc:'var(--teal-txt)'},
+    {mode:'Surge appels',cond:'≥ 3 appels manqués dans les 15 minutes',action:'Tous agents → CA. Crisp suspendu. TL notifié. Log obligatoire.',top:'#E24B4A',hbg:'var(--danger-bg)',mc:'var(--danger-txt)'},
+    {mode:'Surge Crisp',cond:'≥ 10 messages convo non répondus',action:'DC → CC secondaire. CA maintenu. Tickets reportés.',top:'#378ADD',hbg:'var(--info-bg)',mc:'var(--info-txt)'},
+  ];
+  document.getElementById('surge-cards').innerHTML=surges.map(s=>`
+    <div style="border-radius:12px;border:1px solid var(--brd);border-top:4px solid ${s.top};overflow:hidden;box-shadow:0 4px 12px rgba(0,0,0,0.04)">
+      <div style="padding:14px 18px;background:${s.hbg};border-bottom:1px solid var(--brd)">
+        <div style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:${s.mc};margin-bottom:6px">${s.mode}</div>
+        <div style="font-size:var(--title-font);font-weight:600;color:var(--txt1)">${s.cond}</div>
+      </div>
+      <div style="padding:14px 18px;font-size:var(--body-font);color:var(--txt2);line-height:1.6;background:var(--bg1)">${s.action}</div>
+    </div>`).join('');
+}
+
+function renderMat(){
+  const pill=(t,bg,fg)=>`<span style="font-size:var(--body-font);font-weight:600;padding:4px 12px;border-radius:20px;display:inline-block;background:${bg};color:${fg}">${t}</span>`;
+  const caB=theme==='dark'?{bg:'#4A1515',fg:'#FF9898'}:{bg:'#FCEBEB',fg:'#791F1F'};
+  const ccB=theme==='dark'?{bg:'#0D1F3A',fg:'#79B8FF'}:{bg:'#E6F1FB',fg:'#0C447C'};
+  const soloB=theme==='dark'?{bg:'#4A1515',fg:'#FF9898'}:{bg:'#FCEBEB',fg:'#791F1F'};
+  const x2B=theme==='dark'?{bg:'#3D2E00',fg:'#E3B341'}:{bg:'#FFF3CD',fg:'#633806'};
+  const thS=`background:var(--navy);color:#fff;padding:12px 14px;text-align:center;font-size:var(--body-font);font-weight:600`;
+  const tdS=`padding:14px;text-align:center;border-bottom:1px solid var(--brd);font-size:var(--body-font)`;
+  document.getElementById('mat-table-wrap').innerHTML=`
+    <table style="width:100%;border-collapse:collapse;box-shadow:0 4px 12px rgba(0,0,0,0.04);border-radius:12px;overflow:hidden">
+      <thead><tr><th style="${thS}">Créneau</th><th style="${thS}">Effectif</th><th style="${thS}">Crystella</th><th style="${thS}">Gaëlle</th></tr></thead>
+      <tbody>
+        <tr style="background:var(--bg1)"><td style="${tdS};font-weight:600;color:var(--txt1)">07h–10h</td><td style="${tdS}">${pill('×1 solo',soloB.bg,soloB.fg)}</td><td style="${tdS}">${pill('CA + CC',caB.bg,caB.fg)}</td><td style="${tdS};font-style:italic;color:var(--txt3)">Non connectée</td></tr>
+        <tr style="background:var(--bg2)"><td style="${tdS};font-weight:600;color:var(--txt1)">10h–12h</td><td style="${tdS}">${pill('×2',x2B.bg,x2B.fg)}</td><td style="${tdS}">${pill('CA',caB.bg,caB.fg)}</td><td style="${tdS}">${pill('CC',ccB.bg,ccB.fg)}</td></tr>
+        <tr style="background:var(--bg1)"><td style="${tdS};font-weight:600;color:var(--txt1);border-bottom:none">12h–14h</td><td style="${tdS};border-bottom:none">${pill('×2',x2B.bg,x2B.fg)}</td><td style="${tdS};border-bottom:none">${pill('CC',ccB.bg,ccB.fg)}</td><td style="${tdS};border-bottom:none">${pill('CA',caB.bg,caB.fg)}</td></tr>
+      </tbody>
+    </table>`;
+  const cards=[
+    {title:'Surge appels',cond:'≥ 3 appels manqués dans les 15 minutes',steps:['CC bascule immédiatement en CA secondaire','Les deux décrochent — Crisp mis en attente','Retour au planning fixe dès 0 appel en attente'],hbg:'var(--danger-bg)',tc:'var(--danger-txt)',ic:'ti-phone-off'},
+    {title:'Surge Crisp',cond:'≥ 10 messages convo non répondus',steps:['CA bascule en CC secondaire','Les deux traitent Crisp — Ringover surveillé','Retour au planning fixe dès moins de 5 convos'],hbg:'var(--info-bg)',tc:'var(--info-txt)',ic:'ti-message-2'},
+    {title:'Retour au planning',cond:'Pic retombé',steps:['Reprendre le rôle prévu à cet horaire','Pas d\'improvisation — suivre le planning fixe','Le planning reprend automatiquement'],hbg:'var(--teal-bg)',tc:'var(--teal-txt)',ic:'ti-refresh'}
+  ];
+  document.getElementById('mat-cards').innerHTML=cards.map(c=>`
+    <div style="border-radius:12px;border:1px solid var(--brd);overflow:hidden;box-shadow:0 4px 12px rgba(0,0,0,0.04)">
+      <div style="display:flex;align-items:center;gap:12px;padding:14px 18px;background:${c.hbg};border-bottom:1px solid var(--brd)">
+        <i class="ti ${c.ic}" style="font-size:24px;color:${c.tc};flex-shrink:0" aria-hidden="true"></i>
+        <div><div style="font-size:var(--title-font);font-weight:600;color:${c.tc}">${c.title}</div><div style="font-size:12px;color:var(--txt3);margin-top:2px;font-weight:500">${c.cond}</div></div>
+      </div>
+      <div style="background:var(--bg1)">${c.steps.map(s=>`<div style="font-size:var(--body-font);color:var(--txt2);padding:10px 18px 10px 34px;position:relative;border-bottom:1px solid var(--brd);line-height:1.6;font-weight:500"><span style="position:absolute;left:16px;color:var(--teal);font-size:14px;top:12px">→</span>${s}</div>`).join('')}</div>
+    </div>`).join('');
+}
+
+function renderProto(){
+  const protos=[
+    {ic:'ti-user',title:'Protocole SOLO — Crystella 07h–10h',sub:'Aucun filet de sécurité · règles les plus strictes',hbg:'var(--danger-bg)',tc:'var(--danger-txt)',steps:[
+      'Snooze Ringover activé AVANT toute interruption : pause pipi, déjeuner, cas complexe, réunion, souci technique',
+      'Ne pas traiter Crisp tant que Ringover est en snooze — appel prioritaire au retour',
+      'Si 2+ appels manqués → WhatsApp à Patrick immédiatement, même avant 14h',
+      'Rappel dans les 5 min par Crystella · si impossible, logguer et escalader',
+    ]},
+    {ic:'ti-moon',title:'Protocole SNOOZE — règle universelle',sub:'Cause n°1 de l\'incident du 4 juin · tous agents sans exception',hbg:'var(--warn-bg)',tc:'var(--warn-txt)',steps:[
+      '<strong>Avant :</strong> Snooze Ringover ON pour : pause pipi · déjeuner · cas complexe · réunion · souci technique',
+      '<strong>Durée max :</strong> 15 min. Au-delà → informer le CA en poste ou le TL',
+      '<strong>Retour :</strong> Snooze OFF avant toute reprise — ne jamais rouvrir Crisp avant de désactiver',
+      '<strong>Contrôle :</strong> TL vérifie les logs Ringover à chaque fin de shift',
+    ]},
+    {ic:'ti-phone-call',title:'Protocole RAPPEL — appel manqué = action immédiate',sub:'Responsabilité claire par rôle · aucune instruction à attendre',hbg:'var(--info-bg)',tc:'var(--info-txt)',steps:[
+      'Détection : Ringover notifie → CA identifie l\'appel manqué immédiatement',
+      '<strong>Priorité 1 :</strong> CA en poste rappelle dans les 5 min',
+      '<strong>Priorité 2 :</strong> Si CA en communication → le DC prend le rappel',
+      'Log immédiat dans le journal des appels manqués par l\'agent qui a rappelé',
+      'Si non rappelé dans 10 min → ticket ouvert · TL notifié',
+    ]},
+    {ic:'ti-checks',title:'Protocole FIN DE SHIFT — zéro pending',sub:'Aucun agent ne se déconnecte sans relais complet',hbg:'var(--teal-bg)',tc:'var(--teal-txt)',steps:[
+      '15 min avant fin : briefing verbal au successeur sur les dossiers chauds',
+      '<strong>Tags FO :</strong> traiter tous ses tags FO avant de partir',
+      '<strong>Si impossible :</strong> laisser une note claire dans le ticket avant déconnexion',
+      'Log Ringover exporté et partagé au TL si demandé en fin de semaine',
+    ]},
+  ];
+  document.getElementById('proto-list').innerHTML=protos.map(p=>`
+    <div style="border-radius:12px;border:1px solid var(--brd);overflow:hidden;box-shadow:0 4px 12px rgba(0,0,0,0.04)">
+      <div style="display:flex;align-items:center;gap:14px;padding:16px 20px;background:${p.hbg};border-bottom:1px solid var(--brd)">
+        <div style="width:42px;height:42px;border-radius:10px;background:${p.hbg};border:1px solid var(--brd2);display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="ti ${p.ic}" style="font-size:22px;color:${p.tc}" aria-hidden="true"></i></div>
+        <div><div style="font-size:var(--title-font);font-weight:600;color:var(--txt1)">${p.title}</div><div style="font-size:var(--body-font);color:var(--txt3);margin-top:4px;font-weight:500">${p.sub}</div></div>
+      </div>
+      <div style="background:var(--bg1)">${p.steps.map(s=>`<div style="font-size:var(--body-font);color:var(--txt2);padding:12px 20px 12px 36px;position:relative;border-bottom:1px solid var(--brd);line-height:1.6;font-weight:500"><span style="position:absolute;left:18px;color:var(--teal);font-size:14px;top:14px">→</span>${s}</div>`).join('')}</div>
+    </div>`).join('');
+}
+
+initSched();renderAll();
+</script>
+</body>
+</html>
